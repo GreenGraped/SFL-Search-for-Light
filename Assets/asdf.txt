@@ -1,0 +1,9 @@
+https://daekyoulibrary.tistory.com/entry/Unity-New-Input-System-1
+New Input System
+
+https://blog.naver.com/kbh3983/223255473776?trackingCode=rss
+Player Movement
+
+Todo
+ - 경사로 올라가다가 방향 틀면 위로 올라가던 속력 남아있음.
+ - 카메라 이동 구현
