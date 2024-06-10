@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.PlasticSCM.Editor.WebApi;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -25,9 +24,13 @@ public class Player : MonoBehaviour
     {
         bool isMoving = (moveDir != 0);
         RaycastHit2D ground = Physics2D.Raycast(rigid.position, Vector2.down, 1.3f, LayerMask.GetMask("Ground"));
-        Debug.DrawRay(rigid.position, Vector2.down * 1.3f, Color.green);
+        RaycastHit2D testRay = Physics2D.Raycast(rigid.position, Vector2.right, 1f, LayerMask.GetMask("Object"));
+        Debug.DrawRay(rigid.position, Vector2.right, Color.green);
         onGround = ground.collider != null;
-
+        if (testRay.collider != null)
+        {
+            Debug.Log(testRay.collider.name + " has detected");
+        }
         if (onGround)
         {
             currentJumpCount = 0;
@@ -55,6 +58,7 @@ public class Player : MonoBehaviour
         float input = value.Get<float>();
         moveDir = input;
     }
+
     void OnJump()
     {
         if (maxJumpCount <= 1) {
