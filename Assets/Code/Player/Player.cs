@@ -8,6 +8,7 @@ public class Player : MonoBehaviour
     private Rigidbody2D rigid;
     private float moveDir;
     private bool onGround;
+    private Vector2 playerDir;
     private int currentJumpCount;
     [SerializeField] private int maxJumpCount;
     [SerializeField] private float speed;
@@ -23,14 +24,10 @@ public class Player : MonoBehaviour
     private void Update()
     {
         bool isMoving = (moveDir != 0);
+        if (moveDir < 0) playerDir = Vector2.left;
+        else if (moveDir > 0) playerDir = Vector2.right;
         RaycastHit2D ground = Physics2D.Raycast(rigid.position, Vector2.down, 1.3f, LayerMask.GetMask("Ground"));
-        RaycastHit2D testRay = Physics2D.Raycast(rigid.position, Vector2.right, 1f, LayerMask.GetMask("Object"));
-        Debug.DrawRay(rigid.position, Vector2.right, Color.green);
         onGround = ground.collider != null;
-        if (testRay.collider != null)
-        {
-            Debug.Log(testRay.collider.name + " has detected");
-        }
         if (onGround)
         {
             currentJumpCount = 0;
@@ -76,6 +73,13 @@ public class Player : MonoBehaviour
 
         }
         
+    }
+
+    void OnInteraction() {
+        RaycastHit2D interaction = Physics2D.Raycast(rigid.position, playerDir, 1f, LayerMask.GetMask("Object"));
+        if (interaction.collider != null) {
+            Debug.Log(interaction.collider.name + "has detected!");
+        }
     }
 
     void Jump(float jumpPower) {
