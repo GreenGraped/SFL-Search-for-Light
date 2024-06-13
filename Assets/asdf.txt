@@ -4,8 +4,14 @@ New Input System
 https://blog.naver.com/kbh3983/223255473776?trackingCode=rss
 Player Movement
 
+https://aigoia.tistory.com/234
+체력바 구현
+
 Todo
  - 오브젝트 상호작용 구현
+ - 체력바, 스태미너바, 총알 UI 구현
+ - 도끼 던지기, 총 쏘기(글록시발, 샷건)
+ - 죽는 모션(사람, 몹)
 
 FIXME
  - 경사로 올라가다가 방향 틀면 위로 올라가던 속력 남아있음.
