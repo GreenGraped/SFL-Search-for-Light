@@ -6,6 +6,13 @@ Player Movement
 
 Todo
  - 오브젝트 상호작용 구현
+ - Canvas 등 UI 세팅하는 코드 만들기
+ - UIManager 구현
+ - 대화 구현
+ - 어그로 구현
+ - Weapon 클래스 구현
+ - LineRenderer에 사슬 스프라이트 입히거나 그래플링 훅 코드 새로 짜기
+ - ㅅㅂ
 
 FIXME
  - 경사로 올라가다가 방향 틀면 위로 올라가던 속력 남아있음.
