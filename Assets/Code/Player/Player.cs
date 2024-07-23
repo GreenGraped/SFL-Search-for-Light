@@ -8,32 +8,23 @@ public class Player : MonoBehaviour
     private Rigidbody2D rigid;
     private float moveDir;
     private bool onGround;
-    private Vector2 playerDir;
+    public Vector2 playerDir;
     private int currentJumpCount;
-    private LineRenderer lineRenderer;
+    // 공격 쿨타임 만들기
+    private bool onAttackCooldown;
+    private Weapon currentWeapon;
 
     [SerializeField] private int maxJumpCount;
     [SerializeField] private float speed;
     [SerializeField] private float maxSpeed;
     [SerializeField] private float jumpPower;
     [SerializeField] private float inertia;
-    [SerializeField] private int weapon;
-    [SerializeField] private float atkRange;
-    [SerializeField] private float damage;
+    public GameManager.Location currentLocation;
+    
 
     void Start()
     {
         rigid = GetComponent<Rigidbody2D>();
-        lineRenderer = GetComponent<LineRenderer>();
-
-
-        // LineRenderer 설정
-        lineRenderer.startWidth = 0.2f;
-        lineRenderer.endWidth = 0.2f;
-        lineRenderer.startColor = Color.white;
-        lineRenderer.endColor = Color.white;
-        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-        lineRenderer.sortingOrder = -1;  // 필요한 경우 sorting order 설정
     }
 
     private void Update()
@@ -41,6 +32,9 @@ public class Player : MonoBehaviour
         bool isMoving = (moveDir != 0);
         if (moveDir < 0) playerDir = Vector2.left;
         else if (moveDir > 0) playerDir = Vector2.right;
+        if (currentLocation == GameManager.Location.Cp1) {
+            LanternFollowing();
+        }
 
         RaycastHit2D ground = Physics2D.Raycast(rigid.position, Vector2.down, 1.3f, LayerMask.GetMask("Ground"));
         onGround = ground.collider != null;
@@ -50,7 +44,9 @@ public class Player : MonoBehaviour
         }
         HandleMovement(isMoving);
     }
-
+    private void LanternFollowing() {
+        GameManager.Instance.Lantern.transform.position = rigid.position;
+    }
     private void HandleMovement(bool isMoving)
     {
         if (isMoving)
@@ -108,20 +104,51 @@ public class Player : MonoBehaviour
         RaycastHit2D interaction = Physics2D.Raycast(rigid.position, playerDir, 1f, LayerMask.GetMask("Object"));
         if (interaction.collider != null)
         {
+            Collider2D col = interaction.collider;
+            if (col.name == "Door_HTO") {
+                rigid.position = new Vector2(-18, -1.76f);
+                currentLocation = GameManager.Location.Ground;
+                GameManager.Instance.MoveCamera(new Vector2(-7, 1));
+            } else if (col.name == "Door_OTH") {
+                rigid.position = new Vector2(-44, -1.76f);
+                currentLocation = GameManager.Location.Home;
+                GameManager.Instance.MoveCamera(new Vector2(-50, 1));
+            } else if (col.name == "sword") {
+                EquipWeapon(GameManager.Instance.sword);
+                Destroy(col.gameObject);
+            }
             Debug.Log(interaction.collider.name + " has detected!");
         }
     }
 
     void OnAttack()
     {
-        RaycastHit2D attackTarget = Physics2D.Raycast(rigid.position, playerDir, atkRange, LayerMask.GetMask("Enemy"));
-        if (attackTarget.collider != null)
-        {
-            GameObject enemy = attackTarget.collider.gameObject;
-            Enemy enemyScript = enemy.GetComponent<Enemy>();
-            enemyScript.takeDamage(30);
-            Debug.Log("attacked");
+        if (currentWeapon != null) {
+            if (!onAttackCooldown) {
+                currentWeapon.Attack();
+                StartCoroutine(attackCooldown(currentWeapon.cooldown));
+            }
         }
+        
+    }
+
+    private void EquipWeapon(Weapon newWeapon) {
+        currentWeapon = newWeapon;
+    }
+
+    private void DropWeapon()
+    {
+        if (currentWeapon != null)
+        {
+            // Handle weapon dropping logic if needed
+            currentWeapon = null;
+        }
+    }
+
+    IEnumerator attackCooldown(float t) {
+        onAttackCooldown = true;
+        yield return new WaitForSeconds(t);
+        onAttackCooldown = false;
     }
 
     void OnStrongAttack()
