@@ -13,6 +13,10 @@ public class Player : MonoBehaviour
     // 공격 쿨타임 만들기
     private bool onAttackCooldown;
     private Weapon currentWeapon;
+    public bool hasLantern;
+    private bool previousOnGround;
+
+
 
     [SerializeField] private int maxJumpCount;
     [SerializeField] private float speed;
@@ -21,6 +25,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float inertia;
     public GameManager.Location currentLocation;
     
+
 
     void Start()
     {
@@ -32,18 +37,20 @@ public class Player : MonoBehaviour
         bool isMoving = (moveDir != 0);
         if (moveDir < 0) playerDir = Vector2.left;
         else if (moveDir > 0) playerDir = Vector2.right;
-        if (currentLocation == GameManager.Location.Cp1) {
+        if (hasLantern) { // if (currentLocation == GameManager.Location.Cp1)
             LanternFollowing();
         }
 
         RaycastHit2D ground = Physics2D.Raycast(rigid.position, Vector2.down, 1.3f, LayerMask.GetMask("Ground"));
         onGround = ground.collider != null;
+
         if (onGround)
         {
             currentJumpCount = 0;
         }
         HandleMovement(isMoving);
     }
+
     private void LanternFollowing() {
         GameManager.Instance.Lantern.transform.position = rigid.position;
     }
@@ -51,19 +58,27 @@ public class Player : MonoBehaviour
     {
         if (isMoving)
         {
+            // 이동 방향으로 힘을 추가
             rigid.AddForce(Vector2.right * moveDir * speed * Time.deltaTime, ForceMode2D.Impulse);
-            if (rigid.velocity.x > maxSpeed)
+
+            // 최대 속도 제한
+            if (Mathf.Abs(rigid.velocity.x) > maxSpeed)
             {
-                rigid.velocity = new Vector2(maxSpeed, rigid.velocity.y);
-            }
-            else if (rigid.velocity.x < -maxSpeed)
-            {
-                rigid.velocity = new Vector2(-maxSpeed, rigid.velocity.y);
+                rigid.velocity = new Vector2(Mathf.Sign(rigid.velocity.x) * maxSpeed, rigid.velocity.y);
             }
         }
         else
         {
-            rigid.velocity = new Vector2(rigid.velocity.x * inertia, rigid.velocity.y);
+            if (onGround)
+            {
+                // 착지 시 관성을 적용하여 속도 감소를 부드럽게 처리
+                rigid.velocity = new Vector2(rigid.velocity.x * inertia, rigid.velocity.y);
+            }
+            else
+            {
+                // 공중에서는 속도를 유지
+                rigid.velocity = new Vector2(rigid.velocity.x * 0.99f, rigid.velocity.y);
+            }
         }
     }
 
@@ -94,11 +109,10 @@ public class Player : MonoBehaviour
 
     private void Jump(float jumpPower)
     {
-        rigid.velocity = new Vector2(rigid.velocity.x, 0);
+        rigid.velocity = new Vector2(rigid.velocity.x, 0); // 점프 전에 수직 속도를 초기화
         rigid.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
         currentJumpCount++;
     }
-
     void OnInteraction()
     {
         RaycastHit2D interaction = Physics2D.Raycast(rigid.position, playerDir, 1f, LayerMask.GetMask("Object"));
@@ -108,14 +122,22 @@ public class Player : MonoBehaviour
             if (col.name == "Door_HTO") {
                 rigid.position = new Vector2(-18, -1.76f);
                 currentLocation = GameManager.Location.Ground;
-                GameManager.Instance.MoveCamera(new Vector2(-7, 1));
+                GameManager.Instance.cameraCon.MoveCamera(new Vector2(-7, 1));
             } else if (col.name == "Door_OTH") {
                 rigid.position = new Vector2(-44, -1.76f);
                 currentLocation = GameManager.Location.Home;
-                GameManager.Instance.MoveCamera(new Vector2(-50, 1));
+                GameManager.Instance.cameraCon.MoveCamera(new Vector2(-50, 1));
             } else if (col.name == "sword") {
-                EquipWeapon(GameManager.Instance.sword);
+                EquipWeapon(GameManager.Instance.weaponManager.sword);
                 Destroy(col.gameObject);
+            } else if (col.name == "Lantern") {
+                hasLantern = true;
+                CapsuleCollider2D lanternCol = GameManager.Instance.Lantern.GetComponent<CapsuleCollider2D>();
+                lanternCol.enabled = false;
+                GameManager.Instance.Lantern.layer = 0;
+                // SpriteRenderer lanternSprite = GameManager.Instance.Lantern.GetComponent<SpriteRenderer>();
+                // lanternSprite.enabled = false;
+                
             }
             Debug.Log(interaction.collider.name + " has detected!");
         }
@@ -134,15 +156,6 @@ public class Player : MonoBehaviour
 
     private void EquipWeapon(Weapon newWeapon) {
         currentWeapon = newWeapon;
-    }
-
-    private void DropWeapon()
-    {
-        if (currentWeapon != null)
-        {
-            // Handle weapon dropping logic if needed
-            currentWeapon = null;
-        }
     }
 
     IEnumerator attackCooldown(float t) {

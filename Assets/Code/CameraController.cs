@@ -31,4 +31,7 @@ public class CameraController : MonoBehaviour
         Vector3 targetPos = new Vector3(player.transform.position.x, player.transform.position.y, this.transform.position.z);
         transform.position = Vector3.Lerp(transform.position, targetPos, smoothing);
     }
+    public void MoveCamera(Vector2 pos) {
+        mainCamera.transform.position = new Vector3(pos.x, pos.y, -10);
+    }
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,7 +10,10 @@ public class GameManager : MonoBehaviour
     public GameObject Lantern;
     public GameObject GlobalLight;
     public GameObject mainCamera;
-    public Sword sword;
+    public CameraController cameraCon;
+    public SceneManagement sceneManagement;
+    public WeaponManager weaponManager;
+    private Player playerSc;
 
     public enum Location {
         Home,
@@ -26,10 +30,14 @@ public class GameManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(player.gameObject);
+        DontDestroyOnLoad(mainCamera.gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded;    
     }
 
     void Start() {
         Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), true);
+        playerSc = player.GetComponent<Player>();
     }
     // Update is called once per frame
     void Update()
@@ -37,7 +45,16 @@ public class GameManager : MonoBehaviour
         
     }
 
-    public void MoveCamera(Vector2 pos) {
-        mainCamera.transform.position = new Vector3(pos.x, pos.y, -10);
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
+        if (scene.name == "Intro" || scene.name == "Chapter1") {
+            Lantern = GameObject.Find("Lantern");
+        }
+        if (scene.name == "Chapter1") {
+            playerSc.hasLantern = false;
+            Lantern.transform.position = new Vector2(15, -2);
+        }
+        GlobalLight = GameObject.Find("GlobalLight");
     }
+
+    
 }
