@@ -15,7 +15,8 @@ public class Player : MonoBehaviour
     private Weapon currentWeapon;
     public bool hasLantern;
     private bool previousOnGround;
-
+    public bool isAction;
+    public bool isTalking;
 
 
     [SerializeField] private int maxJumpCount;
@@ -27,7 +28,7 @@ public class Player : MonoBehaviour
     
 
 
-    void Start()
+    void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
     }
@@ -48,11 +49,14 @@ public class Player : MonoBehaviour
         {
             currentJumpCount = 0;
         }
-        HandleMovement(isMoving);
+        if (!isAction) {
+            HandleMovement(isMoving);
+        }
+        
     }
 
     private void LanternFollowing() {
-        GameManager.Instance.Lantern.transform.position = rigid.position;
+        GameManager.Instance.Lantern.transform.position = rigid.position + new Vector2(1, 0);
     }
     private void HandleMovement(bool isMoving)
     {
@@ -91,18 +95,20 @@ public class Player : MonoBehaviour
 
     void OnJump()
     {
-        if (maxJumpCount <= 1)
-        {
-            if (onGround && currentJumpCount == 0)
+        if (!isAction) {
+            if (maxJumpCount <= 1)
             {
-                Jump(jumpPower);
+                if (onGround && currentJumpCount == 0)
+                {
+                    Jump(jumpPower);
+                }
             }
-        }
-        else
-        {
-            if (currentJumpCount < maxJumpCount - 1)
+            else
             {
-                Jump(jumpPower);
+                if (currentJumpCount < maxJumpCount - 1)
+                {
+                    Jump(jumpPower);
+                }
             }
         }
     }
@@ -115,31 +121,36 @@ public class Player : MonoBehaviour
     }
     void OnInteraction()
     {
-        RaycastHit2D interaction = Physics2D.Raycast(rigid.position, playerDir, 1f, LayerMask.GetMask("Object"));
-        if (interaction.collider != null)
-        {
-            Collider2D col = interaction.collider;
-            if (col.name == "Door_HTO") {
-                rigid.position = new Vector2(-18, -1.76f);
-                currentLocation = GameManager.Location.Ground;
-                GameManager.Instance.cameraCon.MoveCamera(new Vector2(-7, 1));
-            } else if (col.name == "Door_OTH") {
-                rigid.position = new Vector2(-44, -1.76f);
-                currentLocation = GameManager.Location.Home;
-                GameManager.Instance.cameraCon.MoveCamera(new Vector2(-50, 1));
-            } else if (col.name == "sword") {
-                EquipWeapon(GameManager.Instance.weaponManager.sword);
-                Destroy(col.gameObject);
-            } else if (col.name == "Lantern") {
-                hasLantern = true;
-                CapsuleCollider2D lanternCol = GameManager.Instance.Lantern.GetComponent<CapsuleCollider2D>();
-                lanternCol.enabled = false;
-                GameManager.Instance.Lantern.layer = 0;
-                // SpriteRenderer lanternSprite = GameManager.Instance.Lantern.GetComponent<SpriteRenderer>();
-                // lanternSprite.enabled = false;
-                
+        if (isTalking) {
+            // talking method...
+            GameManager.Instance.dialogueManager.talk(GameManager.Instance.currentDialogId);
+        }
+        else {
+            RaycastHit2D interaction = Physics2D.Raycast(rigid.position, playerDir, 1f, LayerMask.GetMask("Object"));
+            if (interaction.collider != null)
+            {
+                Collider2D col = interaction.collider;
+                if (col.name == "Door_HTO") {
+                    rigid.position = new Vector2(-18, -1.76f);
+                    currentLocation = GameManager.Location.Ground;
+                    GameManager.Instance.cameraCon.MoveCamera(new Vector2(-7, 1));
+                } else if (col.name == "Door_OTH") {
+                    rigid.position = new Vector2(-44, -1.76f);
+                    currentLocation = GameManager.Location.Home;
+                    GameManager.Instance.cameraCon.MoveCamera(new Vector2(-50, 1));
+                } else if (col.name == "sword") {
+                    EquipWeapon(GameManager.Instance.weaponManager.sword);
+                    Destroy(col.gameObject);
+                } else if (col.name == "Lantern") {
+                    hasLantern = true;
+                    CapsuleCollider2D lanternCol = GameManager.Instance.Lantern.GetComponent<CapsuleCollider2D>();
+                    lanternCol.enabled = false;
+                    GameManager.Instance.Lantern.layer = 0;
+                    // SpriteRenderer lanternSprite = GameManager.Instance.Lantern.GetComponent<SpriteRenderer>();
+                    // lanternSprite.enabled = false;
+                    
+                }
             }
-            Debug.Log(interaction.collider.name + " has detected!");
         }
     }
 
@@ -166,7 +177,7 @@ public class Player : MonoBehaviour
 
     void OnStrongAttack()
     {
-        
+        // GameManager.Instance.dialogueManager.setDialog("안녕하신가 천민들\n비즈니스 리라네");
     }
 
     private void RangeAttack(float damage)
@@ -183,6 +194,23 @@ public class Player : MonoBehaviour
                     enemySc.takeKnockback(3f, rigid.position, 2f);
                 }
             }
+        }
+    }
+
+    public void switchAction(bool action, string type) {
+        if (action) {
+            rigid.velocity = Vector2.zero;
+            GameManager.Instance.dialogueManager.canvas.SetActive(true);
+            isAction = true;
+            if (type == "talk") {
+                isTalking = true;
+            }
+        } 
+        else {
+            isAction = false;
+            isTalking = false;
+            GameManager.Instance.dialogueManager.resetCanvas();
+            GameManager.Instance.dialogueManager.canvas.SetActive(false);
         }
     }
 }

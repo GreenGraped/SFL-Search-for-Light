@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,9 +12,10 @@ public class GameManager : MonoBehaviour
     public GameObject GlobalLight;
     public GameObject mainCamera;
     public CameraController cameraCon;
-    public SceneManagement sceneManagement;
     public WeaponManager weaponManager;
-    private Player playerSc;
+    public DialogueManager dialogueManager;
+    public Player playerSc;
+    public int currentDialogId;
 
     public enum Location {
         Home,
@@ -32,12 +34,13 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         DontDestroyOnLoad(player.gameObject);
         DontDestroyOnLoad(mainCamera.gameObject);
-        SceneManager.sceneLoaded += OnSceneLoaded;    
+        playerSc = player.GetComponent<Player>();
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void Start() {
         Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), true);
-        playerSc = player.GetComponent<Player>();
+        
     }
     // Update is called once per frame
     void Update()
@@ -52,9 +55,22 @@ public class GameManager : MonoBehaviour
         if (scene.name == "Chapter1") {
             playerSc.hasLantern = false;
             Lantern.transform.position = new Vector2(15, -2);
+            player.transform.position = new Vector2(-5, 0);
+            cameraCon.MoveCamera(new Vector2(-5, 0));
+        }
+        else if (scene.name == "Intro") {
+            dialogueManager.canvas = GameObject.Find("Dialog");
+            dialogueManager.dialogText = GameObject.Find("DialogText").GetComponent<TextMeshProUGUI>();
+            StartTalk(100);
+            DontDestroyOnLoad(dialogueManager.canvas);
         }
         GlobalLight = GameObject.Find("GlobalLight");
     }
 
+    public void StartTalk(int dialogId) {
+        dialogueManager.talkIndex = 0;
+        currentDialogId = dialogId;
+        dialogueManager.talk(dialogId);
+    }
     
 }
