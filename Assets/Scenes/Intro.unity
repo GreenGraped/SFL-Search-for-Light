@@ -967,8 +967,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC5B4..? \uC5EC\uAE34 \uC5B4\uB514\uC9C0..?\n\uB098\uB294 \uBD84\uBA85
-    \uC5B4\uCA4C\uAD6C\uC800\uCA4C\uAD6C"
+  m_text: test
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e805070855fb99949a7b0052415860db, type: 2}
   m_sharedMaterial: {fileID: 945737131204802418, guid: e805070855fb99949a7b0052415860db, type: 2}
@@ -1910,6 +1909,7 @@ MonoBehaviour:
   hasLantern: 0
   isAction: 0
   isTalking: 0
+  talkingInProgress: 0
   maxJumpCount: 2
   speed: 50
   maxSpeed: 7
@@ -3588,6 +3588,7 @@ MonoBehaviour:
   dialogText: {fileID: 0}
   canvas: {fileID: 0}
   talkIndex: 0
+  dialogInterval: 0.1
 --- !u!4 &4211480096182332109
 Transform:
   m_ObjectHideFlags: 0

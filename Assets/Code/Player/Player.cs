@@ -10,13 +10,12 @@ public class Player : MonoBehaviour
     private bool onGround;
     public Vector2 playerDir;
     private int currentJumpCount;
-    // 공격 쿨타임 만들기
     private bool onAttackCooldown;
     private Weapon currentWeapon;
     public bool hasLantern;
-    private bool previousOnGround;
     public bool isAction;
     public bool isTalking;
+    public bool talkingInProgress;
 
 
     [SerializeField] private int maxJumpCount;
@@ -123,7 +122,13 @@ public class Player : MonoBehaviour
     {
         if (isTalking) {
             // talking method...
-            GameManager.Instance.dialogueManager.talk(GameManager.Instance.currentDialogId);
+            if (talkingInProgress) {
+                GameManager.Instance.dialogueManager.dialogInterval = 0.01f;
+            }
+            else {
+                GameManager.Instance.dialogueManager.dialogInterval = 0.1f;
+                GameManager.Instance.dialogueManager.talk(GameManager.Instance.currentDialogId);
+            }
         }
         else {
             RaycastHit2D interaction = Physics2D.Raycast(rigid.position, playerDir, 1f, LayerMask.GetMask("Object"));

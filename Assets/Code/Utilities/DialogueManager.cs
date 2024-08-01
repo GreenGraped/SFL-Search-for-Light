@@ -10,6 +10,7 @@ public class DialogueManager : MonoBehaviour
     public TextMeshProUGUI dialogText;
     public GameObject canvas;
     public int talkIndex = 0;
+    public float dialogInterval = 0.1f;
 
     private void Awake() {
         dialogData = new Dictionary<int, string[]>();
@@ -37,10 +38,23 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
-        dialogText.text = dialog;
-
         GameManager.Instance.playerSc.switchAction(true, "talk");
+        
+        // talk method...
+        GameManager.Instance.playerSc.talkingInProgress = true;
+        StartCoroutine(talkAnim(dialog));
         talkIndex++;
         
     }
+
+    IEnumerator talkAnim(string m) {
+        string dialogMessage = "";
+        foreach (char a in m) {
+            dialogMessage += a;
+            dialogText.text = dialogMessage;
+            yield return new WaitForSeconds(dialogInterval);
+        }
+        GameManager.Instance.playerSc.talkingInProgress = false;
+    }
+
 }
