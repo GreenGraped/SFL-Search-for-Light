@@ -2,81 +2,104 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
-{
-    [HideInInspector] public float moveSpeed = 0f;
-    [HideInInspector] public float maxHealth = 0f;
-    [HideInInspector] public float sightRange = 0f;
-    private float currentHealth;
-    private bool isStunned;
-    private GameObject target;
-    private Rigidbody2D targetRigid;
-    private Rigidbody2D rigid;
-    private Vector2 dir;
+public interface IEnemyBehavior {
+    void Attack();
+    void Move();
+}
 
-    void Start()
+public abstract class Enemy : MonoBehaviour, IEnemyBehavior
+{
+    public float moveSpeed;
+    public float maxHealth;
+    public float sightRange;
+    public float damage;
+    public float attackRange;
+    public float attackCool;
+
+    protected float currentHealth;
+    protected bool isStunned;
+    protected bool isAttackReady = true;
+    protected GameObject target;
+    protected Rigidbody2D targetRigid;
+    protected Player targetSc;
+    protected Rigidbody2D rigid;
+    protected Vector2 dir;
+
+    protected virtual void Start()
     {
         currentHealth = maxHealth;
         target = GameManager.Instance.player;
         targetRigid = target.GetComponent<Rigidbody2D>();
         rigid = GetComponent<Rigidbody2D>();
+        targetSc = target.GetComponent<Player>();
     }
 
-    // Update is called once per frame
-    void Update()
+    protected virtual void Update()
     {
-        dir = (targetRigid.position - rigid.position).normalized;
-        if (playerFound() && !isStunned) {
-            moveToPlayer();
-        }
+        // 
+        // if (PlayerFound() && !isStunned)
+        // {
+        //     Move();
+        // }
     }
 
-    public void moveToPlayer() {
-        rigid.MovePosition(rigid.position + new Vector2(dir.x * moveSpeed * Time.deltaTime, 0));
+    public abstract void Attack();
+
+    public virtual void Move()
+    {
+        // rigid.MovePosition(rigid.position + new Vector2(dir.x * moveSpeed * Time.deltaTime, 0));
     }
 
-    public void takeDamage(float damage) {
+    public void TakeDamage(float damage)
+    {
         currentHealth -= damage;
-        Debug.Log("Enemy : Damage taken. current health : " + currentHealth);
-        // 데미지 애니메이션 재생
-        if (currentHealth <= 0) {
+        if (currentHealth <= 0)
+        {
             Die();
         }
     }
 
-    public void takeKnockback(float strength, Vector2 point, float stunTime) {
+    public void TakeKnockback(float strength, Vector2 point, float stunTime)
+    {
         Vector2 kbDir = (rigid.position - point).normalized * strength;
         if (kbDir == Vector2.zero) kbDir = Vector2.up * strength;
         kbDir += Vector2.up * 0.3f * strength;
-        getStunned(stunTime);
+        GetStunned(stunTime);
         rigid.AddForce(kbDir, ForceMode2D.Impulse);
     }
 
-    public void getStunned(float time) {
+    public void GetStunned(float time)
+    {
         StartCoroutine(Stun(time));
     }
 
-    IEnumerator Stun(float time) {
+    private IEnumerator Stun(float time)
+    {
         isStunned = true;
         yield return new WaitForSeconds(time);
         isStunned = false;
     }
 
-    private bool playerFound()
+    protected bool PlayerFound()
     {
-        // 'Enemy' 레이어를 제외한 모든 레이어에 대해서만 레이캐스트
         int layerMask = ~LayerMask.GetMask("Enemy");
-
+        dir = (targetRigid.position - rigid.position).normalized;
         RaycastHit2D sight = Physics2D.Raycast(rigid.position, dir, sightRange, layerMask);
-        if (sight.collider != null && sight.collider.gameObject == target)
-        {
-            return true;
-        }
-        return false;
+        return sight.collider != null && sight.collider.gameObject == target;
     }
 
-    private void Die() {
-        // Death Animation
+    protected virtual void Die()
+    {
         Destroy(gameObject);
+    }
+    protected virtual void OnCollisionEnter2D(Collision2D collision)
+    {
+        
+    }
+
+    protected IEnumerator startAttackCooldown(float time) {
+        isAttackReady = false;
+        yield return new WaitForSeconds(time);
+        isAttackReady = true;
     }
 }

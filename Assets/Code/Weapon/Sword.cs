@@ -20,11 +20,11 @@ public class Sword : Weapon
     public override void Attack()
     {
         RaycastHit2D attackTarget = Physics2D.Raycast(player.transform.position, playerSc.playerDir, attackRange, LayerMask.GetMask("Enemy"));
-            if (attackTarget.collider != null)
-            {
-                GameObject enemy = attackTarget.collider.gameObject;
-                Enemy enemyScript = enemy.GetComponent<Enemy>();
-                enemyScript.takeDamage(damage);
-            }
+        if (attackTarget.collider != null)
+        {
+            GameObject enemy = attackTarget.collider.gameObject;
+            Enemy enemyScript = enemy.GetComponent<Enemy>();
+            enemyScript.TakeDamage(damage);
+        }
     }
 }

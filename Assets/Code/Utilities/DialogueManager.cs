@@ -10,7 +10,7 @@ public class DialogueManager : MonoBehaviour
     public TextMeshProUGUI dialogText;
     public GameObject canvas;
     public int talkIndex = 0;
-    public float dialogInterval = 0.1f;
+    public float dialogInterval = 0.05f;
 
     private void Awake() {
         dialogData = new Dictionary<int, string[]>();

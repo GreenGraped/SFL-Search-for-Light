@@ -39,7 +39,6 @@ public class GameManager : MonoBehaviour
     }
 
     void Start() {
-        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Enemy"), true);
         
     }
     // Update is called once per frame
@@ -54,8 +53,8 @@ public class GameManager : MonoBehaviour
         }
         if (scene.name == "Chapter1") {
             playerSc.hasLantern = false;
-            Lantern.transform.position = new Vector2(15, -2);
-            player.transform.position = new Vector2(-5, 0);
+            Lantern.transform.position = new Vector2(0, -2);
+            player.transform.position = new Vector2(-15, 0);
             cameraCon.MoveCamera(new Vector2(-5, 0));
         }
         else if (scene.name == "Intro") {

@@ -16,6 +16,13 @@ public class Player : MonoBehaviour
     public bool isAction;
     public bool isTalking;
     public bool talkingInProgress;
+    public float maxHealth;
+    public float health;
+    public bool isStunned;
+    private bool hasDash;
+    private int dashCount;
+    private bool hasDashCool = false;
+    private Vector2 dashDir;
 
 
     [SerializeField] private int maxJumpCount;
@@ -23,6 +30,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float maxSpeed;
     [SerializeField] private float jumpPower;
     [SerializeField] private float inertia;
+    [SerializeField] private float dashCool;
     public GameManager.Location currentLocation;
     
 
@@ -30,7 +38,14 @@ public class Player : MonoBehaviour
     void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
+        Reset();
     }
+
+    private void Reset() {
+        health = maxHealth;
+    }
+
+
 
     private void Update()
     {
@@ -47,15 +62,17 @@ public class Player : MonoBehaviour
         if (onGround)
         {
             currentJumpCount = 0;
+            dashCount = 1;
+            
         }
-        if (!isAction) {
+        if (!isAction && !isStunned) {
             HandleMovement(isMoving);
         }
         
     }
 
     private void LanternFollowing() {
-        GameManager.Instance.Lantern.transform.position = rigid.position + new Vector2(1, 0);
+        GameManager.Instance.Lantern.transform.position = rigid.position + new Vector2(.7f, 0) * playerDir;
     }
     private void HandleMovement(bool isMoving)
     {
@@ -88,8 +105,12 @@ public class Player : MonoBehaviour
 
     void OnMove(InputValue value)
     {
-        float input = value.Get<float>();
-        moveDir = input;
+        // float input = value.Get<float>();
+        Vector2 input = value.Get<Vector2>();
+        moveDir = input.x;
+        if (input != Vector2.zero) {
+            dashDir = input;
+        }
     }
 
     void OnJump()
@@ -118,15 +139,48 @@ public class Player : MonoBehaviour
         rigid.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
         currentJumpCount++;
     }
+
+    private void Dash()
+    {
+        if (dashDir == Vector2.zero) dashDir = Vector2.right;
+
+        // 플레이어가 대시할 목표 위치를 계산
+        Vector2 targetPosition = rigid.position + dashDir.normalized * 5f;
+
+        // 대시 방향으로 레이캐스트를 쏴서 충돌 검사
+        RaycastHit2D dashPoint = Physics2D.Raycast(rigid.position, dashDir.normalized, 5f, LayerMask.GetMask("Ground"));
+        
+        if (dashPoint.collider == null)
+        {
+            // 충돌하지 않으면 목표 위치로 이동
+            rigid.position = targetPosition;
+            rigid.velocity = Vector2.zero;
+        }
+        else
+        {
+            // 충돌한 경우, 충돌 지점 바로 앞에서 멈추도록 목표 위치를 조정
+            CapsuleCollider2D capsuleCollider = GetComponent<CapsuleCollider2D>();
+            float capsuleRadius = capsuleCollider.size.x / 2f;
+
+            // 충돌 지점에서 플레이어의 캡슐 반지름만큼 뒤로 물러남
+            targetPosition = dashPoint.point - dashDir.normalized * capsuleRadius;
+
+            // 플레이어 위치를 조정된 위치로 설정
+            rigid.position = targetPosition;
+            rigid.velocity = Vector2.zero;
+        }
+    }
+
+
     void OnInteraction()
     {
         if (isTalking) {
             // talking method...
             if (talkingInProgress) {
-                GameManager.Instance.dialogueManager.dialogInterval = 0.01f;
+                GameManager.Instance.dialogueManager.dialogInterval = 0.005f;
             }
             else {
-                GameManager.Instance.dialogueManager.dialogInterval = 0.1f;
+                GameManager.Instance.dialogueManager.dialogInterval = 0.05f;
                 GameManager.Instance.dialogueManager.talk(GameManager.Instance.currentDialogId);
             }
         }
@@ -151,9 +205,9 @@ public class Player : MonoBehaviour
                     CapsuleCollider2D lanternCol = GameManager.Instance.Lantern.GetComponent<CapsuleCollider2D>();
                     lanternCol.enabled = false;
                     GameManager.Instance.Lantern.layer = 0;
-                    // SpriteRenderer lanternSprite = GameManager.Instance.Lantern.GetComponent<SpriteRenderer>();
-                    // lanternSprite.enabled = false;
-                    
+                } else if (col.name == "Dash Skill") {
+                    // get skill animation / tutorial
+                    hasDash = true;
                 }
             }
         }
@@ -180,10 +234,22 @@ public class Player : MonoBehaviour
         onAttackCooldown = false;
     }
 
-    void OnStrongAttack()
+    void OnDash()
     {
-        // GameManager.Instance.dialogueManager.setDialog("안녕하신가 천민들\n비즈니스 리라네");
+        if (hasDash && dashCount > 0 && !hasDashCool) {
+            Dash();
+            dashCount--;
+            StartCoroutine(dashCooldown(dashCool));
+        }
+        
     }
+
+    IEnumerator dashCooldown(float t) {
+        hasDashCool = true;
+        yield return new WaitForSeconds(t);
+        hasDashCool = false;
+    }
+
 
     private void RangeAttack(float damage)
     {
@@ -195,8 +261,8 @@ public class Player : MonoBehaviour
                 Enemy enemySc = target.gameObject.GetComponent<Enemy>();
                 if (enemySc != null)
                 {
-                    enemySc.takeDamage(damage);
-                    enemySc.takeKnockback(3f, rigid.position, 2f);
+                    enemySc.TakeDamage(damage);
+                    enemySc.TakeKnockback(3f, rigid.position, 2f);
                 }
             }
         }
@@ -217,5 +283,41 @@ public class Player : MonoBehaviour
             GameManager.Instance.dialogueManager.resetCanvas();
             GameManager.Instance.dialogueManager.canvas.SetActive(false);
         }
+    }
+
+    public void TakeDamage(float damage, bool knockback, float strength, Vector2 attackPoint) {
+        health -= damage;
+        Debug.Log("attacked. current health is " + health);
+        if (knockback) {
+            TakeKnockback(5f, attackPoint, 0.2f);
+        }
+        if (health <= 0) {
+            Die();
+        }
+    }
+
+    public void TakeKnockback(float strength, Vector2 point, float stunTime)
+    {
+        Vector2 kbDir = (rigid.position - point - new Vector2(0, -0.5f)).normalized * strength;
+        if (kbDir == Vector2.zero) kbDir = Vector2.up * strength;
+        GetStunned(stunTime);
+        rigid.AddForce(kbDir, ForceMode2D.Impulse);
+    }
+
+    public void GetStunned(float time)
+    {
+        StartCoroutine(Stun(time));
+    }
+
+    private IEnumerator Stun(float time)
+    {
+        isStunned = true;
+        yield return new WaitForSeconds(time);
+        isStunned = false;
+    }
+
+    private void Die() {
+        Debug.Log("you died");
+        Reset();
     }
 }

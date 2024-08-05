@@ -1888,7 +1888,7 @@ GameObject:
   - component: {fileID: 964849932}
   m_Layer: 8
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1910,11 +1910,15 @@ MonoBehaviour:
   isAction: 0
   isTalking: 0
   talkingInProgress: 0
+  maxHealth: 100
+  health: 0
+  isStunned: 0
   maxJumpCount: 2
-  speed: 50
+  speed: 40
   maxSpeed: 7
-  jumpPower: 6
+  jumpPower: 7
   inertia: 0
+  dashCool: 0.1
   currentLocation: 0
 --- !u!114 &964849934
 MonoBehaviour:
