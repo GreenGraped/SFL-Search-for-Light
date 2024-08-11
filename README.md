@@ -1,3 +1,2 @@
 # mountain
-Codemos First Project.
-hehe
+Codemos Project
