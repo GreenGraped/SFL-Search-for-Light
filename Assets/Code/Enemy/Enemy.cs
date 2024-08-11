@@ -65,7 +65,7 @@ public abstract class Enemy : MonoBehaviour, IEnemyBehavior
         if (kbDir == Vector2.zero) kbDir = Vector2.up * strength;
         kbDir += Vector2.up * 0.3f * strength;
         GetStunned(stunTime);
-        rigid.AddForce(kbDir, ForceMode2D.Impulse);
+        rigid.velocity = kbDir;
     }
 
     public void GetStunned(float time)
@@ -101,5 +101,6 @@ public abstract class Enemy : MonoBehaviour, IEnemyBehavior
         isAttackReady = false;
         yield return new WaitForSeconds(time);
         isAttackReady = true;
+        Debug.Log("attack ready");
     }
 }

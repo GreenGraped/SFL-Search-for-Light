@@ -289,7 +289,7 @@ public class Player : MonoBehaviour
         health -= damage;
         Debug.Log("attacked. current health is " + health);
         if (knockback) {
-            TakeKnockback(5f, attackPoint, 0.2f);
+            TakeKnockback(strength, attackPoint, 0.2f);
         }
         if (health <= 0) {
             Die();
@@ -301,7 +301,7 @@ public class Player : MonoBehaviour
         Vector2 kbDir = (rigid.position - point - new Vector2(0, -0.5f)).normalized * strength;
         if (kbDir == Vector2.zero) kbDir = Vector2.up * strength;
         GetStunned(stunTime);
-        rigid.AddForce(kbDir, ForceMode2D.Impulse);
+        rigid.velocity = kbDir;
     }
 
     public void GetStunned(float time)

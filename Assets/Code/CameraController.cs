@@ -12,7 +12,8 @@ public class CameraController : MonoBehaviour
     void Start() {
         mainCamera = Camera.main;
         mainCamera.backgroundColor = Color.black;
-        playerSc = player.GetComponent<Player>();
+        playerSc = GameManager.Instance.playerSc;
+        player = GameManager.Instance.player;
     }
 
     private void FixedUpdate()

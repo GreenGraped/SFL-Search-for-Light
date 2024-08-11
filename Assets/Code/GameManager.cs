@@ -7,14 +7,14 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+    [HideInInspector] public GameObject Lantern;
+    [HideInInspector] public GameObject GlobalLight;
     public GameObject player;
-    public GameObject Lantern;
-    public GameObject GlobalLight;
+    public Player playerSc;
     public GameObject mainCamera;
     public CameraController cameraCon;
     public WeaponManager weaponManager;
     public DialogueManager dialogueManager;
-    public Player playerSc;
     public int currentDialogId;
 
     public enum Location {
@@ -31,12 +31,24 @@ public class GameManager : MonoBehaviour
             return;
         }
         Instance = this;
+        init();
         DontDestroyOnLoad(gameObject);
         DontDestroyOnLoad(player.gameObject);
         DontDestroyOnLoad(mainCamera.gameObject);
         playerSc = player.GetComponent<Player>();
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
+
+    void init() {
+        weaponManager = GetComponent<WeaponManager>();
+        dialogueManager = GetComponent<DialogueManager>();
+        player = GameObject.Find("Player");
+        playerSc = player.GetComponent<Player>();
+        mainCamera = GameObject.Find("MainCamera");
+        cameraCon = mainCamera.GetComponent<CameraController>();
+        GlobalLight = GameObject.Find("GlobalLight");
+    }
+
 
     void Start() {
         
@@ -63,7 +75,7 @@ public class GameManager : MonoBehaviour
             StartTalk(100);
             DontDestroyOnLoad(dialogueManager.canvas);
         }
-        GlobalLight = GameObject.Find("GlobalLight");
+        init();
     }
 
     public void StartTalk(int dialogId) {

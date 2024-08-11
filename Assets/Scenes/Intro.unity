@@ -1913,7 +1913,7 @@ MonoBehaviour:
   maxHealth: 100
   health: 0
   isStunned: 0
-  maxJumpCount: 2
+  maxJumpCount: 1
   speed: 40
   maxSpeed: 7
   jumpPower: 7
@@ -3620,6 +3620,7 @@ GameObject:
   - component: {fileID: 8014013076506234245}
   - component: {fileID: 6679716465082077620}
   - component: {fileID: 322726759067462014}
+  - component: {fileID: 8014013076506234246}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -3662,6 +3663,19 @@ MonoBehaviour:
   dialogueManager: {fileID: 322726759067462014}
   playerSc: {fileID: 0}
   currentDialogId: 0
+--- !u!114 &8014013076506234246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5238150622918993429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac00b4609c018fc4f9718a1bb1da8e0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  poolingObjectPrefab: {fileID: 4898929739562071824, guid: 3c961015ca622f64b8791c76dba72603, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

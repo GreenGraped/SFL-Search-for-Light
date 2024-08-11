@@ -26,7 +26,7 @@ public class BasicEnemy : Enemy
     protected override void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Player")) {
-            targetSc.TakeDamage(damage, true, 0, transform.position);
+            targetSc.TakeDamage(damage, true, 5f, transform.position);
         }
     }
 }

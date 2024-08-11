@@ -7,7 +7,6 @@ public class Wolf : Enemy
 {
 
     private int moveDir = 1;
-    private float moveD = 0;
 
     protected override void Start()
     {
@@ -16,14 +15,14 @@ public class Wolf : Enemy
         sightRange = 7f;
         attackRange = 2f;
         damage = 20f;
-        attackCool = 1f;
+        attackCool = 0.6f;
         base.Start();
     }
 
     public override void Attack()
     {
         if (isAttackReady) {
-            targetSc.TakeDamage(damage, true, 0, rigid.position);
+            targetSc.TakeDamage(damage, true, 5f, rigid.position);
             StartCoroutine(startAttackCooldown(attackCool));
         }
     }
@@ -38,17 +37,21 @@ public class Wolf : Enemy
         Move();
         if (PlayerFound()) {
             // FIXME - 몬스터 뒤로 플레이어가 이동해도 몬스터가 플레이어를 공격함.
+            // 시야범위마냥 일정 범위 각도 안에 플레이어가 들어오면 공격 / 좌표 차이 이용?
+            Debug.Log(transform.position - target.transform.position);
             if (Physics2D.OverlapCircle(rigid.position, attackRange, LayerMask.GetMask("Player"))) {
-                Attack();
+                if (Mathf.Abs((transform.position - target.transform.position).y) < 1f 
+                && Mathf.Sign((transform.position - target.transform.position).x) * -1 == moveDir) {
+                    Attack();
+                }
             }
         }
     }
 
     public override void Move() {
-        if (moveD >= 5 || Physics2D.Raycast(rigid.position, new Vector2(moveDir, 0), 1f, LayerMask.GetMask("Ground"))
+        if (Physics2D.Raycast(rigid.position, new Vector2(moveDir, 0), 1f, LayerMask.GetMask("Ground"))
         || !Physics2D.OverlapPoint(rigid.position + new Vector2(moveDir, -1), LayerMask.GetMask("Ground"))) {
             moveDir *= -1;
-            moveD = 0;
             Debug.Log("방향 전환");
         }
         if (moveDir == 1) {
@@ -56,12 +59,6 @@ public class Wolf : Enemy
         } else {
             rigid.velocity = Vector2.left * moveSpeed;
         }
-        moveD += 0.05f;
         // 좌우로 이동하며 벽에 닿거나 낭떠러지가 있을 때 방향을 바꾸는 기능
-    }
-
-    protected override void OnCollisionEnter2D(Collision2D collision)
-    {
-        
     }
 }
