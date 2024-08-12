@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Skeleton : Enemy
 {
+    [SerializeField] private float str;
     protected override void Start()
     {
         moveSpeed = 0f;
@@ -19,9 +20,9 @@ public class Skeleton : Enemy
         if (isAttackReady) {
             var arrow = ObjectPool.GetObject();
             arrow.damage = 40f;
-            var dir = target.transform.position - transform.position;
+            var dir = (target.transform.position - transform.position + new Vector3(0, 0.8f)).normalized;
             arrow.transform.position = transform.position + dir.normalized;
-            arrow.Shoot(dir, 10f);
+            arrow.Shoot(dir, str);
             StartCoroutine(startAttackCooldown(attackCool));
         }
     }

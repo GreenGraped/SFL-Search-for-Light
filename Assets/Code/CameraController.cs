@@ -9,7 +9,7 @@ public class CameraController : MonoBehaviour
     private Camera mainCamera;
     private Player playerSc;
     
-    void Start() {
+    void Awake() {
         mainCamera = Camera.main;
         mainCamera.backgroundColor = Color.black;
         playerSc = GameManager.Instance.playerSc;

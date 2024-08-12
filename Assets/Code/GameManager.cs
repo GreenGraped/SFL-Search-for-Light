@@ -67,6 +67,7 @@ public class GameManager : MonoBehaviour
             playerSc.hasLantern = false;
             Lantern.transform.position = new Vector2(0, -2);
             player.transform.position = new Vector2(-15, 0);
+            playerSc.currentLocation = Location.Cp1;
             cameraCon.MoveCamera(new Vector2(-5, 0));
         }
         else if (scene.name == "Intro") {

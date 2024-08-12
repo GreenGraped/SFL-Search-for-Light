@@ -38,7 +38,6 @@ public class Wolf : Enemy
         if (PlayerFound()) {
             // FIXME - 몬스터 뒤로 플레이어가 이동해도 몬스터가 플레이어를 공격함.
             // 시야범위마냥 일정 범위 각도 안에 플레이어가 들어오면 공격 / 좌표 차이 이용?
-            Debug.Log(transform.position - target.transform.position);
             if (Physics2D.OverlapCircle(rigid.position, attackRange, LayerMask.GetMask("Player"))) {
                 if (Mathf.Abs((transform.position - target.transform.position).y) < 1f 
                 && Mathf.Sign((transform.position - target.transform.position).x) * -1 == moveDir) {
@@ -52,7 +51,6 @@ public class Wolf : Enemy
         if (Physics2D.Raycast(rigid.position, new Vector2(moveDir, 0), 1f, LayerMask.GetMask("Ground"))
         || !Physics2D.OverlapPoint(rigid.position + new Vector2(moveDir, -1), LayerMask.GetMask("Ground"))) {
             moveDir *= -1;
-            Debug.Log("방향 전환");
         }
         if (moveDir == 1) {
             rigid.velocity = Vector2.right * moveSpeed;

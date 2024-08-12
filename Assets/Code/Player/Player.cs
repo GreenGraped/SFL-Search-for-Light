@@ -8,23 +8,22 @@ public class Player : MonoBehaviour
     private Rigidbody2D rigid;
     private float moveDir;
     private bool onGround;
-    public Vector2 playerDir;
     private int currentJumpCount;
     private bool onAttackCooldown;
     private Weapon currentWeapon;
-    public bool hasLantern;
-    public bool isAction;
-    public bool isTalking;
-    public bool talkingInProgress;
-    public float maxHealth;
-    public float health;
-    public bool isStunned;
     private bool hasDash;
     private int dashCount;
     private bool hasDashCool = false;
     private Vector2 dashDir;
-
-
+    [HideInInspector] public Vector2 playerDir;
+    [HideInInspector] public bool hasLantern;
+    [HideInInspector] public bool isAction;
+    [HideInInspector] public bool isTalking;
+    [HideInInspector] public bool talkingInProgress;
+    [HideInInspector] public float maxHealth;
+    [HideInInspector] public float health;
+    [HideInInspector] public bool isStunned;
+    
     [SerializeField] private int maxJumpCount;
     [SerializeField] private float speed;
     [SerializeField] private float maxSpeed;
@@ -38,7 +37,18 @@ public class Player : MonoBehaviour
     void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
+        Init();
         Reset();
+    }
+
+    private void Init() {
+        maxHealth = 100f;
+        maxJumpCount = 1;
+        speed = 40f;
+        maxSpeed = 7f;
+        jumpPower = 8f;
+        inertia = 0f; // 추후 수정 가능성 있음
+        dashCool = 0.1f;
     }
 
     private void Reset() {

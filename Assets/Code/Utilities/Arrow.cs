@@ -18,7 +18,7 @@ public class Arrow : MonoBehaviour
 
     public void Shoot(Vector2 dir, float power) {
         this.dir = dir;
-        rigid.AddForce(dir, ForceMode2D.Impulse);
+        rigid.AddForce(dir * power, ForceMode2D.Impulse);
         Invoke("DestroyBullet", 5f);
     }
 
