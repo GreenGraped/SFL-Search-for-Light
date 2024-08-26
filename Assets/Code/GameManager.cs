@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
     public WeaponManager weaponManager;
     public DialogueManager dialogueManager;
     public int currentDialogId;
+    public Mephistopeles Mep;
 
     public enum Location {
         Home,
@@ -64,6 +65,7 @@ public class GameManager : MonoBehaviour
             Lantern = GameObject.Find("Lantern");
         }
         if (scene.name == "Chapter1") {
+            Mep = GameObject.Find("Mephistopeles").GetComponent<Mephistopeles>();
             playerSc.hasLantern = false;
             Lantern.transform.position = new Vector2(0, -2);
             player.transform.position = new Vector2(-15, 0);

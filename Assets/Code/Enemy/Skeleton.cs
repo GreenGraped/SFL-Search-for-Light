@@ -31,9 +31,23 @@ public class Skeleton : Enemy
         base.Die();
     }
 
+    protected override void ManageAggro()
+    {
+        if (PlayerFound() && !isStunned)
+        {
+            isAggro = true;
+        }
+        else if (!PlayerFound()) {
+            if (isAggro && !isAggroOffing) {
+                StartCoroutine(aggroOff());
+            }
+        }
+    }
+
     protected override void Update()
     {
-        if (PlayerFound()) {
+        ManageAggro();
+        if (isAggro) {
             Attack();
         }
     }

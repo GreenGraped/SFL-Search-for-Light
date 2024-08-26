@@ -24,6 +24,10 @@ public abstract class Enemy : MonoBehaviour, IEnemyBehavior
     protected Player targetSc;
     protected Rigidbody2D rigid;
     protected Vector2 dir;
+    protected SpriteRenderer sprite;
+    protected bool isAggro = false;
+    protected bool isAggroOffing = false;
+    protected int moveDir = 1;
 
     protected virtual void Start()
     {
@@ -32,22 +36,49 @@ public abstract class Enemy : MonoBehaviour, IEnemyBehavior
         targetRigid = target.GetComponent<Rigidbody2D>();
         rigid = GetComponent<Rigidbody2D>();
         targetSc = target.GetComponent<Player>();
+        sprite = GetComponent<SpriteRenderer>();
     }
 
     protected virtual void Update()
     {
-        // 
-        // if (PlayerFound() && !isStunned)
-        // {
-        //     Move();
-        // }
+        
+    }
+
+    protected virtual void ManageAggro() {
+        if (PlayerFound() && !isStunned)
+        {
+            if (Mathf.Sign((transform.position - target.transform.position).x) * -1 == moveDir) {
+                isAggro = true;
+            }
+        }
+        else if (!PlayerFound()) {
+            if (isAggro && !isAggroOffing) {
+                StartCoroutine(aggroOff());
+            }
+        }
+    }
+
+    protected IEnumerator aggroOff() {
+        isAggroOffing = true;
+        yield return new WaitForSeconds(5f);
+        isAggroOffing = false;
+        isAggro = false;
     }
 
     public abstract void Attack();
 
     public virtual void Move()
     {
-        // rigid.MovePosition(rigid.position + new Vector2(dir.x * moveSpeed * Time.deltaTime, 0));
+        if (Physics2D.Raycast(rigid.position, new Vector2(moveDir, 0), 1f, LayerMask.GetMask("Ground"))
+        || !Physics2D.OverlapPoint(rigid.position + new Vector2(moveDir, -1), LayerMask.GetMask("Ground"))) {
+            moveDir *= -1;
+        }
+        if (moveDir == 1) {
+            rigid.velocity = Vector2.right * moveSpeed;
+        } else {
+            rigid.velocity = Vector2.left * moveSpeed;
+        }
+        // 좌우로 이동하며 벽에 닿거나 낭떠러지가 있을 때 방향을 바꾸는 기능
     }
 
     public void TakeDamage(float damage)

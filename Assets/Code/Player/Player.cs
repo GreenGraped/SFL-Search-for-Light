@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Unity.VisualStudio.Editor;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
@@ -31,6 +33,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float inertia;
     [SerializeField] private float dashCool;
     public GameManager.Location currentLocation;
+    public int bossFighting = -1; // not fighting
     
 
 
@@ -119,7 +122,8 @@ public class Player : MonoBehaviour
         Vector2 input = value.Get<Vector2>();
         moveDir = input.x;
         if (input != Vector2.zero) {
-            dashDir = input;
+            if (input.x < 0) dashDir = Vector2.left;
+            else dashDir = Vector2.right;
         }
     }
 
@@ -330,4 +334,80 @@ public class Player : MonoBehaviour
         Debug.Log("you died");
         Reset();
     }
+
+    private void OnCollisionEnter2D(Collision2D col) {
+        if (col.gameObject.name == "Boss Start") {
+            if (currentLocation == GameManager.Location.Cp1) { // 챕터 1일때
+                col.gameObject.GetComponent<BoxCollider2D>().enabled = false;
+                GameManager.Instance.cameraCon.isCameraMoving = false;
+                StartCoroutine(FadeOutMep(0.5f));
+            }
+        }
+    }
+
+    IEnumerator FadeIn(float fadeDuration) {
+        UnityEngine.UI.Image fade = GameObject.Find("Fade").GetComponent<UnityEngine.UI.Image>();
+        
+        float elapsedTime = 0f;
+        Color color = fade.color;
+        color.a = 1f;  // 처음에 alpha를 1로 설정
+        fade.color = color;
+
+        while (elapsedTime < fadeDuration) {
+            elapsedTime += Time.deltaTime;
+            color.a = 1f - Mathf.Clamp01(elapsedTime / fadeDuration);  // alpha 값을 감소
+            fade.color = color;
+            yield return null;
+        }
+
+        color.a = 0f;
+        fade.color = color;
+
+    }
+
+    IEnumerator FadeOut(float fadeDuration) {
+        UnityEngine.UI.Image fade = GameObject.Find("Fade").GetComponent<UnityEngine.UI.Image>();
+        
+        float elapsedTime = 0f;
+        Color color = fade.color;
+        color.a = 1f;  // 처음에 alpha를 1로 설정
+        fade.color = color;
+
+        while (elapsedTime < fadeDuration) {
+            elapsedTime += Time.deltaTime;
+            color.a = Mathf.Clamp01(elapsedTime / fadeDuration);  // alpha 값을 감소
+            fade.color = color;
+            yield return null;
+        }
+
+        color.a = 1f;
+        fade.color = color;
+
+    }
+
+    IEnumerator FadeOutMep(float fadeDuration) {
+        UnityEngine.UI.Image fade = GameObject.Find("Fade").GetComponent<UnityEngine.UI.Image>();
+        
+        float elapsedTime = 0f;
+        Color color = fade.color;
+        color.a = 1f;  // 처음에 alpha를 1로 설정
+        fade.color = color;
+
+        while (elapsedTime < fadeDuration) {
+            elapsedTime += Time.deltaTime;
+            color.a = Mathf.Clamp01(elapsedTime / fadeDuration);  // alpha 값을 감소
+            fade.color = color;
+            yield return null;
+        }
+
+        color.a = 1f;
+        fade.color = color;
+        GameManager.Instance.cameraCon.MoveCamera(new Vector2(115f, 3.5f));
+        rigid.position = new Vector2(105, -1.5f);
+        GameManager.Instance.cameraCon.changeCameraSize(7f);
+        GameManager.Instance.Mep.BossStart();
+        bossFighting = 1;
+        StartCoroutine(FadeIn(fadeDuration));
+    }
+
 }
