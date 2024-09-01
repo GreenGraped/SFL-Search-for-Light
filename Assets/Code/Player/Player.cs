@@ -10,7 +10,6 @@ public class Player : MonoBehaviour
     private Rigidbody2D rigid;
     private float moveDir;
     private bool onGround;
-    private int currentJumpCount;
     private bool onAttackCooldown;
     private Weapon currentWeapon;
     private bool hasDash;
@@ -26,12 +25,14 @@ public class Player : MonoBehaviour
     [HideInInspector] public float health;
     [HideInInspector] public bool isStunned;
     
-    [SerializeField] private int maxJumpCount;
     [SerializeField] private float speed;
     [SerializeField] private float maxSpeed;
     [SerializeField] private float jumpPower;
     [SerializeField] private float inertia;
     [SerializeField] private float dashCool;
+    private float jumpTimeLimit = 0.3f;
+    private float jumpTimer = 0;
+    private bool isJumping = false;
     public GameManager.Location currentLocation;
     public int bossFighting = -1; // not fighting
     
@@ -46,7 +47,6 @@ public class Player : MonoBehaviour
 
     private void Init() {
         maxHealth = 100f;
-        maxJumpCount = 1;
         speed = 40f;
         maxSpeed = 7f;
         jumpPower = 8f;
@@ -74,12 +74,16 @@ public class Player : MonoBehaviour
 
         if (onGround)
         {
-            currentJumpCount = 0;
             dashCount = 1;
-            
         }
         if (!isAction && !isStunned) {
             HandleMovement(isMoving);
+        }
+
+        // long jump logic
+        if (isJumping && jumpTimer < jumpTimeLimit) {
+            jumpTimer += Time.deltaTime;
+            rigid.velocity = new Vector2(rigid.velocity.x, rigid.velocity.y + 10 * Time.deltaTime); // 1 = additional force
         }
         
     }
@@ -116,10 +120,10 @@ public class Player : MonoBehaviour
     }
 
 
-    void OnMove(InputValue value)
+    public void OnMove(InputAction.CallbackContext value)
     {
         // float input = value.Get<float>();
-        Vector2 input = value.Get<Vector2>();
+        Vector2 input = value.ReadValue<Vector2>();
         moveDir = input.x;
         if (input != Vector2.zero) {
             if (input.x < 0) dashDir = Vector2.left;
@@ -127,32 +131,27 @@ public class Player : MonoBehaviour
         }
     }
 
-    void OnJump()
+    public void OnJump(InputAction.CallbackContext context)
     {
         if (!isAction) {
-            if (maxJumpCount <= 1)
-            {
-                if (onGround && currentJumpCount == 0)
-                {
-                    Jump(jumpPower);
-                }
+            if (onGround && context.started) {
+                // Jump(jumpPower);
+                rigid.velocity = new Vector2(rigid.velocity.x, jumpPower);
+                isJumping = true;
+                jumpTimer = 0f;
+                onGround = false;
             }
-            else
-            {
-                if (currentJumpCount < maxJumpCount - 1)
-                {
-                    Jump(jumpPower);
-                }
+            else if (context.canceled && isJumping) {
+                isJumping = false;
             }
         }
     }
 
-    private void Jump(float jumpPower)
-    {
-        rigid.velocity = new Vector2(rigid.velocity.x, 0); // 점프 전에 수직 속도를 초기화
-        rigid.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
-        currentJumpCount++;
-    }
+    // private void Jump(float jumpPower)
+    // {
+    //     rigid.velocity = new Vector2(rigid.velocity.x, 0); // 점프 전에 수직 속도를 초기화
+    //     rigid.AddForce(new Vector2(0, jumpPower), ForceMode2D.Impulse);
+    // }
 
     private void Dash()
     {
@@ -186,7 +185,7 @@ public class Player : MonoBehaviour
     }
 
 
-    void OnInteraction()
+    public void OnInteraction()
     {
         if (isTalking) {
             // talking method...
@@ -227,7 +226,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    void OnAttack()
+    public void OnAttack()
     {
         if (currentWeapon != null) {
             if (!onAttackCooldown) {
@@ -248,7 +247,7 @@ public class Player : MonoBehaviour
         onAttackCooldown = false;
     }
 
-    void OnDash()
+    public void OnDash()
     {
         if (hasDash && dashCount > 0 && !hasDashCool) {
             Dash();
@@ -402,8 +401,8 @@ public class Player : MonoBehaviour
 
         color.a = 1f;
         fade.color = color;
-        GameManager.Instance.cameraCon.MoveCamera(new Vector2(115f, 3.5f));
-        rigid.position = new Vector2(105, -1.5f);
+        GameManager.Instance.cameraCon.MoveCamera(new Vector2(150f, 3.5f));
+        rigid.position = new Vector2(140, -1.5f);
         GameManager.Instance.cameraCon.changeCameraSize(7f);
         GameManager.Instance.Mep.BossStart();
         bossFighting = 1;

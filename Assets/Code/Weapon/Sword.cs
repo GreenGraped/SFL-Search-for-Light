@@ -9,7 +9,7 @@ public class Sword : Weapon
 
     private Sword() {
         damage = 50f;
-        cooldown = 0.4f;
+        cooldown = 0.7f;
         attackRange = 2f;
     }
 
@@ -25,6 +25,14 @@ public class Sword : Weapon
             GameObject enemy = attackTarget.collider.gameObject;
             Enemy enemyScript = enemy.GetComponent<Enemy>();
             enemyScript.TakeDamage(damage);
+        } else {
+            attackTarget = Physics2D.Raycast(player.transform.position, playerSc.playerDir, attackRange, LayerMask.GetMask("Boss"));
+            if (attackTarget.collider != null) {
+                if (playerSc.bossFighting == 1) {
+                    GameManager.Instance.Mep.TakeDamage(damage);
+                    Debug.Log("attacked");
+                }
+            }
         }
     }
 }

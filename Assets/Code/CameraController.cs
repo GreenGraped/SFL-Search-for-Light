@@ -10,10 +10,17 @@ public class CameraController : MonoBehaviour
     public float cameraSize = 10f;
     private Camera mainCamera;
     private Player playerSc;
+    private float height;
+    private float width;
+    private Vector2 center = new Vector2(29.5f, 5f);
+    private Vector2 mapSize = new Vector2(100, 20);
+
     
     void Awake() {
         mainCamera = Camera.main;
         mainCamera.backgroundColor = Color.black;
+        height = mainCamera.orthographicSize;
+        width = height * Screen.width / Screen.height;
     }
 
     void Start() {
@@ -63,7 +70,13 @@ public class CameraController : MonoBehaviour
         transform.position = new Vector3(pos.x, pos.y, -10);
     } // 집 안에서 밖으로 나갈 때 카메라가 부드럽게 따라감
     private void cameraFollowing() {
-        Vector3 targetPos = new Vector3(player.transform.position.x, player.transform.position.y, this.transform.position.z);
+        float lx = mapSize.x - width;
+        float clampX = Mathf.Clamp(player.transform.position.x, center.x - lx, center.x + lx);
+        float ly = mapSize.y - height;
+        float clampY = Mathf.Clamp(player.transform.position.y, center.y - ly, center.y + ly);
+        Vector3 targetPos = new Vector3(clampX, clampY, this.transform.position.z);
+        // TEST 필요 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
         transform.position = Vector3.Lerp(transform.position, targetPos, smoothing);
     }
     public void MoveCamera(Vector2 pos) {
