@@ -12,8 +12,8 @@ public class CameraController : MonoBehaviour
     private Player playerSc;
     private float height;
     private float width;
-    private Vector2 center = new Vector2(29.5f, 5f);
-    private Vector2 mapSize = new Vector2(100, 20);
+    private Vector2[] center = new Vector2[5];
+    private Vector2[] mapSize = new Vector2[5];
 
     
     void Awake() {
@@ -21,6 +21,8 @@ public class CameraController : MonoBehaviour
         mainCamera.backgroundColor = Color.black;
         height = mainCamera.orthographicSize;
         width = height * Screen.width / Screen.height;
+        center[1] = new Vector2(29.5f, 5f);
+        mapSize[1] = new Vector2(100, 20) / 2;
     }
 
     void Start() {
@@ -70,12 +72,19 @@ public class CameraController : MonoBehaviour
         transform.position = new Vector3(pos.x, pos.y, -10);
     } // 집 안에서 밖으로 나갈 때 카메라가 부드럽게 따라감
     private void cameraFollowing() {
-        float lx = mapSize.x - width;
-        float clampX = Mathf.Clamp(player.transform.position.x, center.x - lx, center.x + lx);
-        float ly = mapSize.y - height;
-        float clampY = Mathf.Clamp(player.transform.position.y, center.y - ly, center.y + ly);
+        float lx = 0;
+        float clampX = 0;
+        float ly = 0;
+        float clampY = 0;
+        if (playerSc.currentLocation == GameManager.Location.Cp1)
+        {
+            lx = mapSize[1].x - width;
+            clampX = Mathf.Clamp(player.transform.position.x, center[1].x - lx, center[1].x + lx);
+            ly = mapSize[1].y - height;
+            clampY = Mathf.Clamp(player.transform.position.y, center[1].y - ly, center[1].y + ly);
+        }
         Vector3 targetPos = new Vector3(clampX, clampY, this.transform.position.z);
-        // TEST 필요 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        Debug.Log(targetPos);
 
         transform.position = Vector3.Lerp(transform.position, targetPos, smoothing);
     }

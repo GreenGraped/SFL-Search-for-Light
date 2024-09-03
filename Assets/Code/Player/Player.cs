@@ -82,7 +82,7 @@ public class Player : MonoBehaviour
         // long jump logic
         if (isJumping && jumpTimer < jumpTimeLimit) {
             jumpTimer += Time.deltaTime;
-            rigid.velocity = new Vector2(rigid.velocity.x, rigid.velocity.y + 10 * Time.deltaTime); // 1 = additional force
+            rigid.velocity = new Vector2(rigid.velocity.x, rigid.velocity.y + 15 * Time.deltaTime); // 1 = additional force
         }
         
     }
